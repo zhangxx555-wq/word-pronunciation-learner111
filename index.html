@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>单词发音学习器 - 移动端优化版</title>
+    
+    <style>
+        /* 基础样式 - 保持您原有的CSS完全不变 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 15px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 1.5rem;
+        }
+        
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .input-section {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #2c3e50;
+            font-weight: bold;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        
+        .btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            margin: 5px 0;
+        }
+        
+        .btn:hover {
+            background: #2980b9;
+        }
+        
+        .btn-success {
+            background: #2ecc71;
+        }
+        
+        .btn-success:hover {
+            background: #27ae60;
+        }
+        
+        .btn-danger {
+            background: #e74c3c;
+        }
+        
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+        
+        .btn-test {
+            background: #9b59b6;
+        }
+        
+        .btn-test:hover {
+            background: #8e44ad;
+        }
+        
+        .btn-import {
+            background: #FF9800;
+        }
+        
+        .btn-backup {
+            background: #9C27B0;
+        }
+        
+        .table-section {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+        
+        .table-header {
+            background: #2c3e50;
+            color: white;
+            padding: 15px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        thead {
+            background: #ecf0f1;
+        }
+        
+        th {
+            padding: 12px;
+            text-align: left;
+            color: #2c3e50;
+            font-weight: bold;
+        }
+        
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        
+        .word-cell {
+            color: #3498db;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .word-cell:hover {
+            text-decoration: underline;
+        }
+        
+        .action-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            margin: 0 5px;
+        }
+        
+        .play-btn {
+            color: #3498db;
+        }
+        
+        .slow-btn {
+            color: #e74c3c;
+        }
+        
+        .delete-btn {
+            color: #95a5a6;
+        }
+        
+        .status-bar {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #2ecc71;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            display: none;
+            z-index: 1000;
+        }
+        
+        .empty-table {
+            text-align: center;
+            padding: 40px;
+            color: #95a5a6;
+        }
+        
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .loading-spinner i {
+            font-size: 24px;
+            color: #3498db;
+        }
+        
+        /* 简单加载动画 */
+        .simple-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+    
+    <!-- 加载Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- 简单加载指示器 -->
+    <div id="simpleLoader" class="simple-spinner" style="display: none;"></div>
+    
+    <div class="container" id="mainContent">
+        <header>
+            <h1><i class="fas fa-volume-up"></i> 单词发音学习器</h1>
+            <p class="subtitle">输入单词 → 点击发音 → 实时学习</p>
+        </header>
+        
+        <div class="main-content">
+            <!-- 左侧：输入区域 -->
+            <div class="input-section">
+                <h2><i class="fas fa-plus-circle"></i> 添加新单词</h2>
+                
+                <div class="input-group">
+                    <label for="wordInput"><i class="fas fa-font"></i> 单词/句子</label>
+                    <input type="text" id="wordInput" placeholder="输入你想学习的单词或句子">
+                </div>
+                
+                <div class="input-group">
+                    <label for="phoneticInput"><i class="fas fa-music"></i> 音标（可选）</label>
+                    <input type="text" id="phoneticInput" placeholder="例如: /ˈæpl/">
+                </div>
+                
+                <div class="input-group">
+                    <label for="meaningInput"><i class="fas fa-language"></i> 释义（可选）</label>
+                    <input type="text" id="meaningInput" placeholder="例如: 苹果">
+                </div>
+                
+                <div class="input-group">
+                    <label for="languageSelect"><i class="fas fa-globe"></i> 选择语言</label>
+                    <select id="languageSelect">
+                        <option value="en-US">英语 (美式)</option>
+                        <option value="zh-CN">中文 (普通话)</option>
+                        <option value="ja-JP">日语</option>
+                        <option value="ko-KR">韩语</option>
+                        <option value="fr-FR">法语</option>
+                        <option value="de-DE">德语</option>
+                    </select>
+                </div>
+                
+                <button class="btn btn-success" onclick="addWord()">
+                    <i class="fas fa-plus"></i> 添加到单词表
+                </button>
+                
+                <button class="btn btn-test" onclick="testPronunciation()">
+                    <i class="fas fa-play"></i> 试听发音
+                </button>
+                
+                <button class="btn btn-danger" onclick="clearAllWords()">
+                    <i class="fas fa-trash"></i> 清空所有单词
+                </button>
+                
+                <button class="btn btn-import" onclick="importWordData()">
+                    <i class="fas fa-file-import"></i> 导入数据
+                </button>
+                
+                <button class="btn btn-backup" onclick="backupData()">
+                    <i class="fas fa-download"></i> 备份数据
+                </button>
+            </div>
+            
+            <!-- 右侧：单词表格 -->
+            <div class="table-section">
+                <div class="table-header">
+                    <h2><i class="fas fa-list"></i> 单词表 (<span id="wordCount">0</span>个单词)</h2>
+                </div>
+                
+                <div style="overflow-x: auto;">
+                    <table id="wordTable">
+                        <thead>
+                            <tr>
+                                <th>单词</th>
+                                <th>音标</th>
+                                <th>释义</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="wordList">
+                            <!-- 单词会动态添加到这里 -->
+                        </tbody>
+                    </table>
+                    
+                    <div id="emptyMessage" class="empty-table">
+                        <i class="fas fa-book-open"></i>
+                        <h3>单词表是空的</h3>
+                        <p>请在左侧添加你的第一个单词</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="status-bar" id="statusBar"></div>
+
+    <script>
+        // ==================== 核心变量 ====================
+        let wordList = [];
+        const STORAGE_KEY = 'simple_word_learner';
+        
+        // 发音优化新增变量
+        let availableVoices = [];
+        let currentVoice = null;
+        let isVoiceSystemReady = false;
+        
+        // ==================== 页面初始化 ====================
+        window.addEventListener('DOMContentLoaded', function() {
+            console.log('页面开始加载');
+            
+            // 立即显示主内容
+            document.getElementById('mainContent').style.display = 'block';
+            
+            // 加载单词数据
+            loadWordsFromStorage();
+            
+            // 初始化语音系统（新增）
+            initVoiceSystem();
+            
+            // 显示成功消息
+            setTimeout(function() {
+                showStatus('页面加载完成！', 'success');
+            }, 500);
+            
+            console.log('页面加载完成');
+        });
+        
+        // ==================== 新增：语音系统优化 ====================
+        function initVoiceSystem() {
+            if (!('speechSynthesis' in window)) {
+                console.warn('浏览器不支持语音合成');
+                return;
+            }
+            
+            // 获取可用的语音
+            function loadAvailableVoices() {
+                availableVoices = speechSynthesis.getVoices();
+                
+                if (availableVoices.length > 0) {
+                    selectBestVoice();
+                    isVoiceSystemReady = true;
+                    console.log('语音系统就绪，找到', availableVoices.length, '个语音');
+                }
+            }
+            
+            // 加载语音
+            loadAvailableVoices();
+            
+            // 监听语音变化（有些浏览器需要这个）
+            speechSynthesis.onvoiceschanged = loadAvailableVoices;
+        }
+        
+        function selectBestVoice() {
+            if (availableVoices.length === 0) return;
+            
+            const targetLang = document.getElementById('languageSelect').value;
+            let bestVoice = null;
+            let bestScore = -1;
+            
+            // 为每个语音评分
+            availableVoices.forEach(voice => {
+                let score = 0;
+                
+                // 1. 语言匹配（最重要）
+                if (voice.lang === targetLang) {
+                    score += 100; // 完全匹配
+                } else if (voice.lang.startsWith(targetLang.substring(0, 2))) {
+                    score += 50; // 语言相同，地区不同
+                }
+                
+                // 2. 语音质量判断
+                const voiceName = voice.name.toLowerCase();
+                if (voiceName.includes('natural') || voiceName.includes('premium')) {
+                    score += 30; // 高质量语音
+                } else if (voiceName.includes('enhanced')) {
+                    score += 20; // 增强版
+                } else if (voiceName.includes('google')) {
+                    score += 15; // Google语音
+                }
+                
+                // 3. 本地语音更稳定
+                if (voice.localService) {
+                    score += 10;
+                }
+                
+                // 4. 已知的好语音加分
+                if (voiceName.includes('microsoft david') || 
+                    voiceName.includes('microsoft zira') ||
+                    voiceName.includes('samantha') ||
+                    voiceName.includes('daniel')) {
+                    score += 5;
+                }
+                
+                // 更新最佳语音
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestVoice = voice;
+                }
+            });
+            
+            currentVoice = bestVoice || availableVoices[0];
+            
+            if (currentVoice) {
+                console.log('选择语音:', currentVoice.name, '语言:', currentVoice.lang);
+            }
+        }
+        
+        // ==================== 优化版发音函数 ====================
+        function speakWord(text, lang = 'en-US') {
+            if (!('speechSynthesis' in window)) {
+                showStatus('您的浏览器不支持语音合成', 'error');
+                return;
+            }
+            
+            // 验证输入
+            if (!text || text.trim() === '') {
+                showStatus('请输入要发音的文本', 'error');
+                return;
+            }
+            
+            // 清理文本
+            text = text.trim();
+            
+            // 停止当前发音
+            if (speechSynthesis.speaking) {
+                speechSynthesis.cancel();
+            }
+            
+            // 创建语音实例
+            const utterance = new SpeechSynthesisUtterance(text);
+            
+            // 设置语音（优化部分）
+            if (currentVoice && isVoiceSystemReady) {
+                utterance.voice = currentVoice;
+                utterance.lang = currentVoice.lang;
+            } else {
+                utterance.lang = lang;
+            }
+            
+            // 优化发音参数（根据语言调整）
+            const langSettings = {
+                'en-US': { rate: 0.85, pitch: 1.0, volume: 1.0 },
+                'en-GB': { rate: 0.88, pitch: 1.0, volume: 1.0 },
+                'zh-CN': { rate: 0.75, pitch: 1.1, volume: 1.0 },
+                'ja-JP': { rate: 0.78, pitch: 1.0, volume: 1.0 },
+                'fr-FR': { rate: 0.9, pitch: 0.95, volume: 1.0 },
+                'de-DE': { rate: 0.85, pitch: 1.0, volume: 1.0 },
+                'ko-KR': { rate: 0.8, pitch: 1.0, volume: 1.0 }
+            };
+            
+            const settings = langSettings[lang] || { rate: 0.85, pitch: 1.0, volume: 1.0 };
+            utterance.rate = settings.rate;    // 语速：0.1（很慢）-10（很快）
+            utterance.pitch = settings.pitch;  // 音调：0（低）-2（高）
+            utterance.volume = settings.volume;// 音量：0-1
+            
+            // 事件处理
+            utterance.onstart = function() {
+                showStatus('🔊 发音中...', 'info');
+            };
+            
+            utterance.onend = function() {
+                showStatus('发音完成', 'success');
+            };
+            
+            utterance.onerror = function(event) {
+                console.error('发音错误:', event);
+                showStatus('发音出错', 'error');
+                
+                // 尝试备选方案：使用简单设置
+                try {
+                    const fallbackUtterance = new SpeechSynthesisUtterance(text);
+                    fallbackUtterance.lang = lang;
+                    fallbackUtterance.rate = 0.8;
+                    fallbackUtterance.pitch = 1.0;
+                    speechSynthesis.speak(fallbackUtterance);
+                } catch (e) {
+                    console.error('备选方案也失败了:', e);
+                }
+            };
+            
+            // 延迟播放确保稳定性
+            setTimeout(() => {
+                speechSynthesis.speak(utterance);
+            }, 50);
+        }
+        
+        // 慢速发音
+        function speakSlow(text, lang = 'en-US') {
+            if (!('speechSynthesis' in window)) return;
+            
+            const utterance = new SpeechSynthesisUtterance(text);
+            
+            if (currentVoice && isVoiceSystemReady) {
+                utterance.voice = currentVoice;
+                utterance.lang = currentVoice.lang;
+            } else {
+                utterance.lang = lang;
+            }
+            
+            utterance.rate = 0.6;  // 更慢的语速
+            utterance.pitch = 1.0;
+            utterance.volume = 1.0;
+            
+            speechSynthesis.speak(utterance);
+            showStatus('慢速发音...', 'info');
+        }
+        
+        // ==================== 您的原有功能（保持完全不变）====================
+        
+        // 添加单词
+        function addWord() {
+            const wordInput = document.getElementById('wordInput');
+            const phoneticInput = document.getElementById('phoneticInput');
+            const meaningInput = document.getElementById('meaningInput');
+            const languageSelect = document.getElementById('languageSelect');
+            
+            const word = wordInput.value.trim();
+            const phonetic = phoneticInput.value.trim();
+            const meaning = meaningInput.value.trim();
+            const language = languageSelect.value;
+            
+            if (!word) {
+                showStatus('请输入单词！', 'error');
+                return;
+            }
+            
+            // 创建新单词
+            const newWord = {
+                id: Date.now(),
+                word: word,
+                phonetic: phonetic || '—',
+                meaning: meaning || '—',
+                language: language,
+                date: new Date().toLocaleDateString()
+            };
+            
+            wordList.push(newWord);
+            renderTable();
+            
+            // 清空输入
+            wordInput.value = '';
+            phoneticInput.value = '';
+            meaningInput.value = '';
+            wordInput.focus();
+            
+            showStatus('单词已添加！', 'success');
+            saveWordsToStorage();
+        }
+        
+        // 渲染表格
+        function renderTable() {
+            const tbody = document.getElementById('wordList');
+            const emptyMessage = document.getElementById('emptyMessage');
+            
+            if (wordList.length === 0) {
+                tbody.innerHTML = '';
+                emptyMessage.style.display = 'block';
+                updateWordCount();
+                return;
+            }
+            
+            emptyMessage.style.display = 'none';
+            tbody.innerHTML = '';
+            
+            wordList.forEach((item) => {
+                const row = document.createElement('tr');
+                
+                // 单词列 - 使用优化后的speakWord
+                const wordCell = document.createElement('td');
+                wordCell.innerHTML = `
+                    <div class="word-cell" onclick="speakWord('${escapeText(item.word)}', '${item.language}')">
+                        <i class="fas fa-volume-up"></i> ${item.word}
+                    </div>
+                    <div style="font-size: 12px; color: #95a5a6;">
+                        ${item.language} | ${item.date}
+                    </div>
+                `;
+                
+                // 音标列
+                const phoneticCell = document.createElement('td');
+                phoneticCell.textContent = item.phonetic;
+                
+                // 释义列
+                const meaningCell = document.createElement('td');
+                meaningCell.textContent = item.meaning;
+                
+                // 操作列 - 使用优化后的speakWord
+                const actionCell = document.createElement('td');
+                actionCell.innerHTML = `
+                    <button class="action-btn play-btn" onclick="speakWord('${escapeText(item.word)}', '${item.language}')" title="发音">
+                        <i class="fas fa-play"></i>
+                    </button>
+                    <button class="action-btn delete-btn" onclick="deleteWord(${item.id})" title="删除">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                `;
+                
+                row.appendChild(wordCell);
+                row.appendChild(phoneticCell);
+                row.appendChild(meaningCell);
+                row.appendChild(actionCell);
+                tbody.appendChild(row);
+            });
+            
+            updateWordCount();
+        }
+        
+        // 转义文本，防止引号问题
+        function escapeText(text) {
+            return text.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        }
+        
+        // 试听发音 - 使用优化后的函数
+        function testPronunciation() {
+            const wordInput = document.getElementById('wordInput');
+            const languageSelect = document.getElementById('languageSelect');
+            
+            const text = wordInput.value.trim();
+            if (!text) {
+                showStatus('请输入要试听的单词', 'error');
+                return;
+            }
+            
+            speakWord(text, languageSelect.value);
+        }
+        
+        // 删除单词
+        function deleteWord(id) {
+            if (confirm('确定要删除这个单词吗？')) {
+                wordList = wordList.filter(item => item.id !== id);
+                renderTable();
+                saveWordsToStorage();
+                showStatus('单词已删除', 'info');
+            }
+        }
+        
+        // 清空所有单词
+        function clearAllWords() {
+            if (wordList.length === 0) {
+                showStatus('单词表已经是空的', 'info');
+                return;
+            }
+            
+            if (confirm(`确定要清空所有 ${wordList.length} 个单词吗？此操作不可撤销！`)) {
+                wordList = [];
+                renderTable();
+                saveWordsToStorage();
+                showStatus('已清空所有单词', 'info');
+            }
+        }
+        
+        // ==================== 数据存储 ====================
+        
+        // 保存到本地存储
+        function saveWordsToStorage() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(wordList));
+            } catch (error) {
+                console.error('保存失败:', error);
+            }
+        }
+        
+        // 从本地存储加载
+        function loadWordsFromStorage() {
+            try {
+                const savedData = localStorage.getItem(STORAGE_KEY);
+                if (savedData) {
+                    wordList = JSON.parse(savedData);
+                    renderTable();
+                }
+            } catch (error) {
+                console.error('加载失败:', error);
+                wordList = [];
+            }
+        }
+        
+        // 更新单词计数
+        function updateWordCount() {
+            document.getElementById('wordCount').textContent = wordList.length;
+        }
+        
+        // ==================== 导入导出功能 ====================
+        
+        // 导出数据
+        function exportWords() {
+            if (wordList.length === 0) {
+                showStatus('没有单词可以导出', 'error');
+                return;
+            }
+            
+            const data = {
+                exportedAt: new Date().toISOString(),
+                words: wordList
+            };
+            
+            const dataStr = JSON.stringify(data, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = '我的单词表.json';
+            a.click();
+            
+            showStatus('数据已导出', 'success');
+        }
+        
+        // 导入数据
+        function importWordData() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    try {
+                        const importedData = JSON.parse(event.target.result);
+                        let importedWords = [];
+                        
+                        if (Array.isArray(importedData)) {
+                            importedWords = importedData;
+                        } else if (importedData.words && Array.isArray(importedData.words)) {
+                            importedWords = importedData.words;
+                        }
+                        
+                        if (importedWords.length === 0) {
+                            throw new Error('没有找到有效的单词数据');
+                        }
+                        
+                        // 合并数据
+                        const existingWords = new Set(wordList.map(w => w.word.toLowerCase()));
+                        const newWords = importedWords.filter(w => 
+                            w.word && !existingWords.has(w.word.toLowerCase())
+                        );
+                        
+                        wordList = wordList.concat(newWords);
+                        saveWordsToStorage();
+                        renderTable();
+                        
+                        showStatus(`成功导入 ${newWords.length} 个单词`, 'success');
+                        
+                    } catch (error) {
+                        showStatus('导入失败: ' + error.message, 'error');
+                    }
+                };
+                
+                reader.readAsText(file);
+            };
+            
+            input.click();
+        }
+        
+        // 备份数据
+        function backupData() {
+            if (wordList.length === 0) {
+                showStatus('没有数据可以备份', 'error');
+                return;
+            }
+            
+            const backup = {
+                version: '1.0',
+                backupAt: new Date().toISOString(),
+                wordCount: wordList.length,
+                words: wordList
+            };
+            
+            const dataStr = JSON.stringify(backup, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = '单词备份.json';
+            a.click();
+            
+            showStatus('数据已备份', 'success');
+        }
+        
+        // ==================== 工具函数 ====================
+        
+        // 显示状态消息
+        function showStatus(message, type = 'info') {
+            const statusBar = document.getElementById('statusBar');
+            
+            statusBar.textContent = message;
+            statusBar.style.display = 'block';
+            
+            // 设置颜色
+            const colors = {
+                success: '#2ecc71',
+                error: '#e74c3c',
+                info: '#3498db'
+            };
+            statusBar.style.background = colors[type] || colors.info;
+            
+            // 3秒后隐藏
+            setTimeout(() => {
+                statusBar.style.display = 'none';
+            }, 3000);
+        }
+        
+        // ==================== 键盘快捷键 ====================
+        
+        document.addEventListener('keydown', function(e) {
+            const wordInput = document.getElementById('wordInput');
+            
+            // 焦点在输入框时
+            if (document.activeElement === wordInput) {
+                // Enter 键试听发音
+                if (e.key === 'Enter') {
+                    testPronunciation();
+                    e.preventDefault();
+                }
+                
+                // Ctrl+Enter 添加单词
+                if (e.ctrlKey && e.key === 'Enter') {
+                    addWord();
+                    e.preventDefault();
+                }
+            }
+            
+            // 空格键停止发音
+            if (e.key === ' ' && !e.target.matches('input, textarea, button')) {
+                if (speechSynthesis.speaking) {
+                    speechSynthesis.cancel();
+                    showStatus('发音已停止', 'info');
+                }
+                e.preventDefault();
+            }
+        });
+        
+        // 初始示例数据
+        function addExampleWords() {
+            const examples = [
+                { word: 'Hello', phonetic: '/həˈləʊ/', meaning: '你好', language: 'en-US' },
+                { word: 'Pronunciation', phonetic: '/prəˌnʌn.siˈeɪ.ʃən/', meaning: '发音', language: 'en-US' },
+                { word: '你好', phonetic: 'nǐ hǎo', meaning: 'Hello', language: 'zh-CN' },
+                { word: 'こんにちは', phonetic: 'konnichiwa', meaning: '你好', language: 'ja-JP' }
+            ];
+            
+            examples.forEach(example => {
+                wordList.push({
+                    id: Date.now() + Math.random(),
+                    ...example,
+                    date: new Date().toLocaleDateString()
+                });
+            });
+            
+            renderTable();
+            saveWordsToStorage();
+            showStatus('已添加示例单词', 'success');
+        }
+        
+        // 页面加载完成后添加一些示例单词（如果为空）
+        setTimeout(function() {
+            if (wordList.length === 0) {
+                // 可选：自动添加示例单词
+                // addExampleWords();
+            }
+        }, 1000);
+    </script>
+</body>
+</html>
